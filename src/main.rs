@@ -1,10 +1,11 @@
 use eframe::egui::{self, ViewportBuilder};
+use modern_egui::theme;
 
-use crate::ui::{State};
+use crate::ui::State;
 
+mod derivation;
 mod generator;
 mod ui;
-mod guarded;
 
 #[derive(Default)]
 struct App {
@@ -13,9 +14,7 @@ struct App {
 
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut eframe::egui::Ui, frame: &mut eframe::Frame) {
-        egui::CentralPanel::default().show(ui, |ui| {
-            self.ui(ui)
-        });
+        egui::CentralPanel::default().show(ui, |ui| Self::ui(ui, &mut self.state));
     }
 }
 
@@ -24,7 +23,7 @@ fn main() -> eframe::Result<()> {
         centered: true,
         viewport: ViewportBuilder::default()
             .with_title("Lab-1")
-            .with_inner_size([960.0, 700.0]),
+            .with_inner_size([1800.0, 1000.0]),
         ..Default::default()
     };
 
@@ -32,7 +31,8 @@ fn main() -> eframe::Result<()> {
         "Lab-1",
         options,
         Box::new(|cc| {
-            cc.egui_ctx.set_visuals(egui::Visuals::dark());
+            theme::apply(&cc.egui_ctx);
+            cc.egui_ctx.set_theme(egui::ThemePreference::Dark);
             Ok(Box::new(App::default()))
         }),
     )

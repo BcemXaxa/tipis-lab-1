@@ -1,46 +1,77 @@
 use std::f64::consts::PI;
 
-pub trait SignalGenerator {
-    fn get_at(&self, t: f64) -> f64;
+#[derive(Clone, Copy)]
+pub enum SignalType {
+    Digital,
+    Harmonic,
 }
 
-pub struct Harmonic {
+#[derive(Clone, PartialEq)]
+pub struct WaveProperties {
     pub frequency: f64,
     pub amplitude: f64,
     pub phase: f64,
 }
-impl Harmonic {
-    pub fn new(freq: f64, amp: f64, phase: f64) -> Self {
-        Self {
-            frequency: freq,
-            amplitude: amp,
-            phase: phase,
+
+#[derive(Clone, PartialEq)]
+pub struct SignalProperties {
+    pub sample_rate: f64,
+    pub duration: f64,
+}
+
+pub trait SignalGenerator {
+    fn get_at(&self, t: f64) -> f64;
+    fn produce(&self, signal_properties: SignalProperties) -> Vec<[f64; 2]> {
+        let SignalProperties {
+            sample_rate,
+            duration,
+        } = signal_properties;
+        
+        let mut out = Vec::new();
+        let dt = (1.0 / sample_rate).abs();
+        if !dt.is_normal() {
+            return out;
         }
+
+        let [mut left, right] = [0.0f64.min(duration), 0.0f64.max(duration)];
+        out.push([left, self.get_at(left)]);
+        while left < right {
+            left = (left + dt).min(right);
+            out.push([left, self.get_at(left)]);
+        }
+        out
+    }
+}
+
+pub struct Harmonic {
+    wave_properties: WaveProperties,
+}
+impl Harmonic {
+    pub fn new(wave_properties: WaveProperties) -> Self {
+        Self { wave_properties }
     }
 }
 
 impl SignalGenerator for Harmonic {
     fn get_at(&self, t: f64) -> f64 {
-        self.amplitude * ((t * self.frequency + self.phase) * 2.0 * PI).sin()
+        let p = &self.wave_properties;
+        p.amplitude * ((t * p.frequency + p.phase) * 2.0 * PI).sin()
     }
 }
 
 pub struct Digital {
-    pub frequency: f64,
-    pub amplitude: f64,
-    pub phase: f64,
+    wave_properties: WaveProperties,
 }
 impl Digital {
-    pub fn new(freq: f64, amp: f64, phase: f64) -> Self {
+    pub fn new(wave_properties: WaveProperties) -> Self {
         Self {
-            frequency: freq,
-            amplitude: amp,
-            phase: phase,
+            wave_properties,
         }
     }
 }
 impl SignalGenerator for Digital {
     fn get_at(&self, t: f64) -> f64 {
-        ((t * self.frequency + self.phase).rem_euclid(1.0)).round() * self.amplitude
+        let p = &self.wave_properties;
+        ((t * p.frequency + p.phase).rem_euclid(1.0)).round() * p.amplitude
     }
 }
