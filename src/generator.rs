@@ -1,4 +1,4 @@
-use std::f64::consts::PI;
+use std::{f64::consts::{PI, TAU}, ops::{Deref, DerefMut}};
 
 #[derive(Clone, Copy)]
 pub enum SignalType {
@@ -6,7 +6,7 @@ pub enum SignalType {
     Harmonic,
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct WaveProperties {
     pub frequency: f64,
     pub amplitude: f64,
@@ -43,6 +43,7 @@ pub trait SignalGenerator {
     }
 }
 
+#[derive(Clone)]
 pub struct Harmonic {
     wave_properties: WaveProperties,
 }
@@ -51,14 +52,14 @@ impl Harmonic {
         Self { wave_properties }
     }
 }
-
 impl SignalGenerator for Harmonic {
     fn get_at(&self, t: f64) -> f64 {
         let p = &self.wave_properties;
-        p.amplitude * ((t * p.frequency + p.phase) * 2.0 * PI).sin()
+        p.amplitude * ((t * p.frequency + p.phase) * TAU).sin()
     }
 }
 
+#[derive(Clone)]
 pub struct Digital {
     wave_properties: WaveProperties,
 }
@@ -72,6 +73,31 @@ impl Digital {
 impl SignalGenerator for Digital {
     fn get_at(&self, t: f64) -> f64 {
         let p = &self.wave_properties;
-        ((t * p.frequency + p.phase).rem_euclid(1.0)).round() * p.amplitude
+        p.amplitude * ((t * p.frequency + p.phase).rem_euclid(1.0)).round()
+    }
+}
+
+// Convenience implementations
+
+impl DerefMut for Harmonic {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.wave_properties
+    }
+}
+impl Deref for Harmonic {
+    type Target = WaveProperties;
+    fn deref(&self) -> &Self::Target {
+        &self.wave_properties
+    }
+}
+impl DerefMut for Digital {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.wave_properties
+    }
+}
+impl Deref for Digital {
+    type Target = WaveProperties;
+    fn deref(&self) -> &Self::Target {
+        &self.wave_properties
     }
 }
