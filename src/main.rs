@@ -14,7 +14,7 @@ struct App {
 }
 
 impl eframe::App for App {
-    fn ui(&mut self, ui: &mut eframe::egui::Ui, frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut eframe::egui::Ui, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ui, |ui| Self::ui(ui, &mut self.state));
     }
 }
@@ -32,6 +32,15 @@ fn main() -> eframe::Result<()> {
         "Lab-1 / Lab-2",
         options,
         Box::new(|cc| {
+            let mut fonts = egui::FontDefinitions::default();
+            egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
+            egui_phosphor::add_font_bytes_as_family(
+                &mut fonts,
+                "phosphor-bold",
+                egui_phosphor::Variant::Bold.font_bytes(),
+            );
+            cc.egui_ctx.set_fonts(fonts);
+
             theme::apply(&cc.egui_ctx);
             cc.egui_ctx.set_theme(egui::ThemePreference::Dark);
             Ok(Box::new(App::default()))

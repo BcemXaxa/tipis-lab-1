@@ -1,6 +1,7 @@
 use crate::generator::{
     Digital, Harmonic, SignalGenerator, SignalProperties, SignalType, WaveProperties,
 };
+use crate::modulation::{ModulationType, build_modulator};
 use realfft::RealFftPlanner;
 
 pub struct Derived {
@@ -9,6 +10,13 @@ pub struct Derived {
 }
 
 impl Derived {
+    pub fn empty() -> Self {
+        Self {
+            samples: Vec::new(),
+            spectrum: Vec::new(),
+        }
+    }
+
     pub fn new(
         signal_type: SignalType,
         wave_properties: WaveProperties,
@@ -20,6 +28,27 @@ impl Derived {
                 Harmonic::new(wave_properties).produce(signal_properties.clone())
             }
         };
+        let spectrum =
+            Self::make_spectrum(samples.iter().map(|[_, y]| *y).collect(), signal_properties);
+        Self { samples, spectrum }
+    }
+
+    /// Builds a modulated signal from a harmonic carrier and a digital
+    /// modulating signal.
+    pub fn new_modulated(
+        carrier: WaveProperties,
+        modulating: WaveProperties,
+        kind: ModulationType,
+        modulation_index: f64,
+        signal_properties: SignalProperties,
+    ) -> Self {
+        let samples = build_modulator(
+            kind,
+            Harmonic::new(carrier),
+            Digital::new(modulating),
+            modulation_index,
+        )
+        .produce(signal_properties.clone());
         let spectrum =
             Self::make_spectrum(samples.iter().map(|[_, y]| *y).collect(), signal_properties);
         Self { samples, spectrum }

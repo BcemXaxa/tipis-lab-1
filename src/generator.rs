@@ -1,4 +1,7 @@
-use std::{f64::consts::{PI, TAU}, ops::{Deref, DerefMut}};
+use std::{
+    f64::consts::TAU,
+    ops::{Deref, DerefMut},
+};
 
 #[derive(Clone, Copy)]
 pub enum SignalType {
