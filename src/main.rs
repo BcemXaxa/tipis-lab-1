@@ -6,6 +6,7 @@ use crate::ui::State;
 mod derivation;
 mod generator;
 mod modulation;
+mod synth;
 mod ui;
 
 #[derive(Default)]
@@ -23,6 +24,7 @@ fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         centered: true,
         viewport: ViewportBuilder::default()
+            .with_fullscreen(true)
             .with_title("Lab-1 / Lab-2")
             .with_inner_size([1800.0, 1000.0]),
         ..Default::default()

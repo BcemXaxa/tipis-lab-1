@@ -207,6 +207,7 @@ enum Tab {
     #[default]
     Signals,
     Modulation,
+    Synth,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Default)]
